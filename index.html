@@ -1,19 +1,19 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>sedhai.com - Ecosystem Hub</title>
+    <title>Sedhai Ecosystem Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --neon-blue: #00f3ff;
-            --neon-purple: #bc13fe;
-            --neon-pink: #ff007f;
-            --bg-color: #050510;
+            --bg-color: #030308;
+            --color-web2: #00f3ff;
+            --color-web3: #bc13fe;
+            --color-domain: #ffaa00;
+            --color-future: #33ffaa;
         }
 
         body {
@@ -21,29 +21,50 @@
             color: #fff;
             font-family: 'Inter', sans-serif;
             overflow-x: hidden;
-            background-image: 
-                radial-gradient(circle at 15% 50%, rgba(0, 243, 255, 0.05), transparent 25%),
-                radial-gradient(circle at 85% 30%, rgba(188, 19, 254, 0.05), transparent 25%);
+            margin: 0;
+            padding: 0;
         }
 
-        .font-mono {
-            font-family: 'Space Mono', monospace;
+        .font-mono { font-family: 'Space Mono', monospace; }
+
+        /* Loader Animations */
+        #loader {
+            background: linear-gradient(45deg, #0f0c29, #302b63, #24243e);
+            background-size: 400% 400%;
+            animation: gradientBG 5s ease infinite;
         }
 
-        .perspective {
-            perspective: 1000px;
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
-        .flip-card-inner {
+        .progress-bar-fill {
+            width: 0%;
+            animation: fillProgress 5s linear forwards;
+        }
+
+        @keyframes fillProgress {
+            to { width: 100%; }
+        }
+
+        /* 3D Flipcard Styles */
+        .perspective-container {
+            perspective: 1500px;
+        }
+
+        .flip-card {
             position: relative;
             width: 100%;
-            height: 100%;
+            height: 280px;
             text-align: center;
             transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
             transform-style: preserve-3d;
+            cursor: pointer;
         }
 
-        .flip-card.hovered .flip-card-inner {
+        .flip-card.hovered {
             transform: rotateY(180deg);
         }
 
@@ -59,175 +80,209 @@
             justify-content: center;
             align-items: center;
             padding: 1.5rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .flip-card-front {
-            background: linear-gradient(145deg, #11111a, #1a1a2e);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            background: #0d0d16;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: box-shadow 0.3s ease;
         }
 
         .flip-card-back {
-            background: linear-gradient(145deg, #1a1a2e, #2d1b4e);
             transform: rotateY(180deg);
-            border: 1px solid var(--neon-purple);
+            background: #11111a;
         }
 
-        /* Colorful Glowing Borders via pseudo-elements */
-        .flip-card-front::before {
-            content: '';
-            position: absolute;
-            top: -2px; left: -2px; right: -2px; bottom: -2px;
-            background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple), var(--neon-pink));
-            z-index: -1;
-            border-radius: 1.1rem;
-            opacity: 0.3;
-            transition: opacity 0.3s;
+        /* Glitch Exit Effect */
+        @keyframes pixelGlitch {
+            0% { transform: scale(1); clip-path: inset(0 0 0 0); filter: hue-rotate(0deg); }
+            10% { transform: scale(1.02) translate(4px, -4px); clip-path: inset(10% 0 80% 0); filter: invert(1); }
+            20% { transform: scale(0.98) translate(-4px, 4px); clip-path: inset(80% 0 10% 0); filter: hue-rotate(90deg); }
+            30% { transform: scale(1.05) translate(4px, 4px); clip-path: inset(40% 0 40% 0); filter: contrast(200%); }
+            40% { transform: scale(0.95) translate(-4px, -4px); clip-path: inset(20% 0 60% 0); filter: invert(0); }
+            50% { transform: scale(1.01) translate(2px, 0); clip-path: inset(60% 0 20% 0); filter: hue-rotate(-90deg); }
+            100% { transform: scale(1); clip-path: inset(0 0 0 0); filter: none; }
         }
 
-        .flip-card.hovered .flip-card-front::before {
-            opacity: 1;
-            filter: blur(8px);
+        .glitch-active {
+            animation: pixelGlitch 0.4s steps(6) forwards;
+            pointer-events: none; /* Prevent re-hover during glitch */
         }
 
-        /* Entry Animation Setup */
-        .flip-card {
+        /* Main View transitions */
+        #app-wrapper {
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease;
+            transform-origin: center top;
+            min-height: 100vh;
+        }
+
+        .app-zoomed-out {
+            transform: scale(0.85) translateY(-50px);
             opacity: 0;
-            transform: translateY(50px);
-            transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .flip-card.entered {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        @keyframes glitchExit {
-            0% { filter: blur(0px) contrast(100%) hue-rotate(0deg); transform: translate(0); }
-            20% { filter: blur(4px) contrast(200%) hue-rotate(90deg); transform: translate(-5px, 5px); }
-            40% { filter: blur(2px) contrast(300%) hue-rotate(-90deg); transform: translate(5px, -5px) skewX(10deg); }
-            60% { filter: blur(6px) contrast(150%) hue-rotate(45deg); transform: translate(-2px, -2px) skewX(-10deg); }
-            80% { filter: blur(2px) contrast(250%) hue-rotate(180deg); transform: translate(2px, 2px); }
-            100% { filter: blur(0px) contrast(100%) hue-rotate(0deg); transform: translate(0); }
-        }
-
-        .glitch-exit .flip-card-inner {
-            animation: glitchExit 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-        }
-
-        @keyframes zoomOutFade {
-            0% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(0.5) translateZ(-500px); opacity: 0; pointer-events: none; }
-        }
-
-        .zoom-out {
-            animation: zoomOutFade 0.6s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
-        }
-
-        /* Loader specific styles */
-        .pulse-logo {
-            animation: pulseLogo 2s infinite alternate;
-        }
-
-        @keyframes pulseLogo {
-            0% { text-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-blue); transform: scale(1); }
-            100% { text-shadow: 0 0 30px var(--neon-purple), 0 0 60px var(--neon-pink); transform: scale(1.1); }
+            pointer-events: none;
         }
 
         /* Iframe Overlay */
         #iframe-overlay {
-            backdrop-filter: blur(20px);
-            background: rgba(0,0,0,0.85);
-            transition: opacity 0.5s ease;
+            opacity: 0;
+            pointer-events: none;
+            backdrop-filter: blur(10px);
+            background: rgba(3, 3, 8, 0.9);
+            transition: opacity 0.6s ease;
         }
-        
-        .iframe-container {
-            border: 1px solid rgba(255,255,255,0.2);
-            box-shadow: 0 0 50px rgba(188, 19, 254, 0.3);
+
+        #iframe-overlay.active {
+            opacity: 1;
+            pointer-events: all;
         }
+
+        .card-enter {
+            opacity: 0;
+            transform: translateY(30px) rotateX(-10deg);
+            animation: cardFadeIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        @keyframes cardFadeIn {
+            to { opacity: 1; transform: translateY(0) rotateX(0); }
+        }
+
+        /* Group Specific Glows */
+        .group-web2 .flip-card-front, .group-web2 .flip-card-back { border-bottom: 3px solid var(--color-web2); }
+        .group-web2:hover .flip-card-front { box-shadow: 0 0 30px rgba(0, 243, 255, 0.2); }
         
-        .hide { display: none !important; }
-        .invisible { opacity: 0; pointer-events: none; }
+        .group-web3 .flip-card-front, .group-web3 .flip-card-back { border-bottom: 3px solid var(--color-web3); }
+        .group-web3:hover .flip-card-front { box-shadow: 0 0 30px rgba(188, 19, 254, 0.2); }
+        
+        .group-domain .flip-card-front, .group-domain .flip-card-back { border-bottom: 3px solid var(--color-domain); }
+        .group-domain:hover .flip-card-front { box-shadow: 0 0 30px rgba(255, 170, 0, 0.2); }
+        
+        .group-future .flip-card-front, .group-future .flip-card-back { border-bottom: 3px solid var(--color-future); opacity: 0.7; }
+        .group-future:hover .flip-card-front { box-shadow: 0 0 30px rgba(51, 255, 170, 0.2); opacity: 1; }
+
     </style>
 </head>
-<body class="antialiased min-h-screen flex flex-col">
+<body>
 
-    <!-- Loading Screen / Init Context -->
-    <div id="loader" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#050510] transition-opacity duration-1000">
-        <div class="text-8xl font-black mb-8 pulse-logo tracking-tighter">S</div>
-        <h1 class="text-2xl font-mono mb-12 tracking-[0.3em] text-gray-400 uppercase">sedhai.com</h1>
-        <p class="text-sm font-mono text-gray-500 mb-8 blink">AWAITING CONNECTION...</p>
+    <!-- Interactive Loading Screen -->
+    <div id="loader" class="fixed inset-0 z-50 flex flex-col items-center justify-center cursor-pointer">
+        <div class="text-center mb-12">
+            <h1 class="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 mb-4 animate-pulse">
+                SEDHAI.COM
+            </h1>
+            <p class="font-mono text-gray-300 tracking-[0.4em] uppercase text-sm md:text-base">Ecosystem Initialization</p>
+        </div>
         
-        <button id="init-btn" class="px-8 py-4 bg-transparent border border-cyan-400 text-cyan-400 font-mono hover:bg-cyan-400 hover:text-black transition-all duration-300 rounded-lg group relative overflow-hidden">
-            <span class="relative z-10 font-bold uppercase tracking-widest">Initialize Network</span>
-            <div class="absolute inset-0 h-full w-0 bg-cyan-400 transition-all duration-300 ease-out group-hover:w-full z-0"></div>
-        </button>
+        <div class="w-64 md:w-96 h-2 bg-gray-800 rounded-full overflow-hidden mb-6 relative">
+            <div class="h-full bg-gradient-to-r from-cyan-400 to-purple-500 progress-bar-fill"></div>
+        </div>
+
+        <p class="text-xs font-mono text-gray-400 animate-bounce">Click anywhere to bypass initialization</p>
     </div>
 
-    <!-- Main Content -->
-    <main class="flex-1 w-full max-w-7xl mx-auto px-4 py-12 flex flex-col relative z-10" id="main-content">
+    <!-- Main App Wrapper (Scales down when iframe opens) -->
+    <div id="app-wrapper" class="opacity-0 hidden pt-12 pb-24 px-4 md:px-8">
         
-        <header class="text-center mb-16 opacity-0 transition-opacity duration-1000" id="main-header">
-            <h1 class="text-4xl md:text-5xl font-black mb-4 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500">
-                Sedhai Ecosystem Hub
-            </h1>
-            <p class="text-gray-400 font-mono max-w-2xl mx-auto">
-                Live Network Active. Hover cards to reveal core nodes. Click to establish direct encrypted links.
-            </p>
+        <header class="text-center mb-20">
+            <h2 class="text-4xl md:text-5xl font-black text-white mb-4 drop-shadow-lg">Global Node Network</h2>
+            <p class="text-gray-400 font-mono">Hover nodes to decode. Click to establish direct uplink.</p>
         </header>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 pb-12" id="grid-container">
-            <!-- Cards injected via JS -->
-        </div>
-
-        <footer class="mt-auto text-center py-6 text-xs text-gray-600 font-mono">
-            &copy; 2026 sedhai.com. Network Secured.
-        </footer>
-    </main>
-
-    <!-- Iframe Overlay -->
-    <div id="iframe-overlay" class="fixed inset-0 z-40 invisible flex flex-col p-4 md:p-8">
-        <div class="w-full max-w-7xl mx-auto flex justify-between items-center mb-4">
-            <div class="flex items-center gap-4">
-                <div class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
-                <h2 id="iframe-title" class="font-mono text-xl font-bold text-white">Connection Established</h2>
-            </div>
-            <div class="flex gap-4">
-                <a id="iframe-ext-link" href="#" target="_blank" class="px-4 py-2 border border-gray-600 rounded text-sm hover:bg-gray-800 transition">Open External &nearr;</a>
-                <button id="iframe-close" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-bold rounded transition">CLOSE [X]</button>
-            </div>
-        </div>
+        <!-- Dynamic Content Container -->
+        <main id="content-container" class="max-w-7xl mx-auto space-y-24">
+            <!-- Sections will be injected here by JS -->
+        </main>
         
-        <div class="flex-1 w-full max-w-7xl mx-auto rounded-xl overflow-hidden iframe-container relative bg-black">
-            <div id="iframe-loader" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <div class="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                <span class="font-mono text-cyan-500">ESTABLISHING UPLINK...</span>
+        <footer class="mt-24 text-center text-xs text-gray-600 font-mono border-t border-gray-900 pt-8">
+            &copy; 2026 sedhai.com. Distributed Network Hub.
+        </footer>
+    </div>
+
+    <!-- Iframe Viewer Overlay -->
+    <div id="iframe-overlay" class="fixed inset-0 z-40 flex flex-col p-4 md:p-6">
+        <div class="w-full h-full max-w-screen-2xl mx-auto flex flex-col bg-[#0a0a0f] border border-gray-800 rounded-2xl overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.8)] relative">
+            
+            <!-- Toolbar -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-800 bg-[#05050a] z-10">
+                <div class="flex items-center gap-3">
+                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
+                    <span id="iframe-title" class="ml-4 font-mono text-sm font-bold text-gray-300">UPLINK ESTABLISHED</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a id="ext-link" href="#" target="_blank" class="text-xs font-mono text-cyan-400 hover:text-cyan-300 hover:underline">Open in New Tab &nearr;</a>
+                    <button id="close-btn" class="px-4 py-2 bg-red-600/20 text-red-400 border border-red-600/50 hover:bg-red-600 hover:text-white transition-colors rounded font-mono text-sm font-bold">
+                        TERMINATE LINK
+                    </button>
+                </div>
             </div>
-            <iframe id="target-iframe" src="" class="w-full h-full border-none relative z-10 bg-white" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+
+            <!-- Iframe Container -->
+            <div class="relative flex-1 w-full h-full bg-black">
+                <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none" id="iframe-spinner">
+                    <div class="w-16 h-16 border-4 border-gray-800 border-t-cyan-500 rounded-full animate-spin mb-4"></div>
+                    <p class="font-mono text-cyan-500 text-sm tracking-widest animate-pulse">CONNECTING...</p>
+                </div>
+                <iframe id="target-frame" src="" class="absolute inset-0 w-full h-full border-none z-10 bg-white" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+            </div>
         </div>
     </div>
 
     <script>
-        // Project Data Model
-        const projects = [
-            { name: 'Edilco AU', url: 'https://edilco.com.au', desc: 'Construction & Corporate Portal', status: 'active' },
-            { name: 'Edilco Home', url: 'https://edilcohome.com.au', desc: 'Residential Solutions & Homes', status: 'active' },
-            { name: 'Edilco Builder', url: 'https://edilcobuilder.com.au', desc: 'Commercial Builders Network', status: 'active' },
-            { name: 'Hamro AU', url: 'https://hamro.com.au', desc: 'Community Portal & Services', status: 'active' },
-            { name: 'Tradie Girl', url: 'https://tradiegirl.web.app', desc: 'Trade Services Web App', status: 'active' },
-            { name: 'Manab App', url: 'https://manab.web.app', desc: 'Portfolio & Cloud App', status: 'active' },
-            { name: 'Bimal App', url: 'https://bimal.web.app', desc: 'Developer Workspace', status: 'active' },
-            { name: 'Web3 Portal', url: 'https://ethereum.org', desc: 'Smart Contracts & DApps', status: 'active', btnText: 'Launch DApp' },
-            { name: 'PTE Dream', url: 'https://pte.dream', desc: 'AI Practice & Test Prep', status: 'active', btnText: 'Start Prep' },
-            { name: 'Build Your Dream', url: 'https://buildyour.dream', desc: 'Startup & Innovation Platform', status: 'active', btnText: 'Explore' },
-            { name: 'Future Slot 1', url: '#', desc: 'Add domain or link details here.', status: 'inactive' },
-            { name: 'Future Slot 2', url: '#', desc: 'Add domain or link details here.', status: 'inactive' },
-            { name: 'Future Slot 3', url: '#', desc: 'Add domain or link details here.', status: 'inactive' },
-            { name: 'Future Slot 4', url: '#', desc: 'Add domain or link details here.', status: 'inactive' },
-            { name: 'Future Slot 5', url: '#', desc: 'Add domain or link details here.', status: 'inactive' }
+        // Data Structure
+        const ecosystemData = [
+            {
+                groupId: 'web2',
+                title: 'Web 2 Ecosystem',
+                colorClass: 'group-web2',
+                textColor: 'text-[#00f3ff]',
+                btnClass: 'bg-[#00f3ff]/20 text-[#00f3ff] border-[#00f3ff]/50 hover:bg-[#00f3ff] hover:text-black',
+                projects: [
+                    { name: 'Edilco AU', url: 'https://edilco.com.au', desc: 'Construction & Corporate Portal' },
+                    { name: 'Edilco Home', url: 'https://edilcohome.com.au', desc: 'Residential Solutions & Homes' },
+                    { name: 'Edilco Builder', url: 'https://edilcobuilder.com.au', desc: 'Commercial Builders Network' },
+                    { name: 'Hamro AU', url: 'https://hamro.com.au', desc: 'Community Portal & Services' },
+                    { name: 'Tradie Girl', url: 'https://tradiegirl.web.app', desc: 'Trade Services Web App' },
+                    { name: 'Manab App', url: 'https://manab.web.app', desc: 'Portfolio & Cloud App' },
+                    { name: 'Bimal App', url: 'https://bimal.web.app', desc: 'Developer Workspace' }
+                ]
+            },
+            {
+                groupId: 'web3',
+                title: 'Web 3 Portal',
+                colorClass: 'group-web3',
+                textColor: 'text-[#bc13fe]',
+                btnClass: 'bg-[#bc13fe]/20 text-[#bc13fe] border-[#bc13fe]/50 hover:bg-[#bc13fe] hover:text-white',
+                projects: [
+                    { name: 'Web3 Network', url: 'https://ethereum.org', desc: 'Smart Contracts & Decentralized Apps' }
+                ]
+            },
+            {
+                groupId: 'domains',
+                title: 'Web 3 Domains',
+                colorClass: 'group-domain',
+                textColor: 'text-[#ffaa00]',
+                btnClass: 'bg-[#ffaa00]/20 text-[#ffaa00] border-[#ffaa00]/50 hover:bg-[#ffaa00] hover:text-black',
+                projects: [
+                    { name: 'PTE Dream', url: 'https://pte.dream', desc: 'AI Practice & Test Prep Platform' },
+                    { name: 'Build Your Dream', url: 'https://buildyour.dream', desc: 'Startup & Innovation Platform' }
+                ]
+            },
+            {
+                groupId: 'future',
+                title: 'Future Nodes',
+                colorClass: 'group-future',
+                textColor: 'text-[#33ffaa]',
+                btnClass: 'bg-gray-800 text-gray-500 cursor-not-allowed border-gray-700',
+                projects: [
+                    { name: 'Future Slot 1', url: '#', desc: 'Expansion Slot Active', inactive: true },
+                    { name: 'Future Slot 2', url: '#', desc: 'Expansion Slot Active', inactive: true },
+                    { name: 'Future Slot 3', url: '#', desc: 'Expansion Slot Active', inactive: true },
+                    { name: 'Future Slot 4', url: '#', desc: 'Expansion Slot Active', inactive: true },
+                    { name: 'Future Slot 5', url: '#', desc: 'Expansion Slot Active', inactive: true }
+                ]
+            }
         ];
 
-        // Web Audio API Context
+        // Audio Engine
         let audioCtx;
         
         function initAudio() {
@@ -241,194 +296,235 @@
 
         function playSound(type) {
             if (!audioCtx) return;
-
-            const osc = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            
-            osc.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            
             const now = audioCtx.currentTime;
-
-            if (type === 'startup') {
-                // Deep sweeping swell
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(50, now);
-                osc.frequency.exponentialRampToValueAtTime(400, now + 1.5);
-                gainNode.gain.setValueAtTime(0, now);
-                gainNode.gain.linearRampToValueAtTime(0.2, now + 0.5);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 1.5);
-                osc.start(now);
-                osc.stop(now + 1.5);
-            } 
-            else if (type === 'hover') {
-                // Quick digital blip
+            
+            if (type === 'web2') {
+                // High tech blip
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(800, now);
                 osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
-                gainNode.gain.setValueAtTime(0.05, now);
-                gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-                osc.start(now);
-                osc.stop(now + 0.1);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(now); osc.stop(now + 0.1);
+            } 
+            else if (type === 'web3') {
+                // Deep synth hum
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.exponentialRampToValueAtTime(150, now + 0.2);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(now); osc.stop(now + 0.2);
             }
-            else if (type === 'click') {
-                // Deep warp/confirm
+            else if (type === 'domains') {
+                // Chime
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(1200, now);
+                osc.frequency.exponentialRampToValueAtTime(600, now + 0.3);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(now); osc.stop(now + 0.3);
+            }
+            else if (type === 'future') {
+                // Low muffled knock
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
                 osc.type = 'square';
-                osc.frequency.setValueAtTime(300, now);
-                osc.frequency.exponentialRampToValueAtTime(50, now + 0.3);
-                gainNode.gain.setValueAtTime(0.1, now);
-                gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-                osc.start(now);
-                osc.stop(now + 0.3);
+                osc.frequency.setValueAtTime(80, now);
+                osc.frequency.exponentialRampToValueAtTime(40, now + 0.1);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(now); osc.stop(now + 0.1);
+            }
+            else if (type === 'glitch') {
+                // Static noise simulation (quick random frequencies)
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.linearRampToValueAtTime(3000, now + 0.05);
+                osc.frequency.linearRampToValueAtTime(100, now + 0.1);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(now); osc.stop(now + 0.1);
+            }
+            else if (type === 'confirm') {
+                // Confirmation zoom out sound
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(50, now + 0.4);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.4);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(now); osc.stop(now + 0.4);
             }
         }
 
-        const gridContainer = document.getElementById('grid-container');
-
-        projects.forEach((proj, index) => {
-            const isInactive = proj.status === 'inactive';
-            const btnText = proj.btnText || (isInactive ? 'Inactive' : 'Visit Website');
-            const displayUrl = isInactive ? 'Available for expansion' : proj.url.replace('https://', '');
-            const themeClass = isInactive ? 'text-gray-500' : 'text-cyan-400';
-
-            const cardHTML = `
-                <div class="h-64 perspective flip-card cursor-pointer group" data-index="${index}" data-url="${proj.url}" style="transition-delay: ${index * 100}ms">
-                    <div class="flip-card-inner shadow-2xl">
-                        <!-- Front of Card -->
-                        <div class="flip-card-front">
-                            <h2 class="text-2xl font-bold mb-2 ${isInactive ? 'text-gray-400' : 'text-white'}">${proj.name}</h2>
-                            <p class="font-mono text-sm ${themeClass} mb-6">${displayUrl}</p>
-                            <span class="text-xs tracking-widest uppercase text-gray-500 group-hover:text-cyan-300 transition-colors">
-                                ${isInactive ? 'Coming Soon' : 'Hover to Visit &rarr;'}
-                            </span>
-                        </div>
-                        
-                        <!-- Back of Card -->
-                        <div class="flip-card-back">
-                            <h3 class="text-xl font-bold mb-2 text-white">${proj.name}</h3>
-                            <p class="text-sm text-gray-300 mb-6 px-4">${proj.desc}</p>
-                            
-                            <button class="px-6 py-2 rounded-full font-mono text-sm font-bold transition-all
-                                ${isInactive 
-                                    ? 'bg-gray-800 text-gray-500 cursor-not-allowed border border-gray-700' 
-                                    : 'bg-gradient-to-r from-cyan-500 to-purple-600 text-white hover:shadow-[0_0_15px_rgba(0,243,255,0.6)]'}">
-                                ${btnText}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            gridContainer.insertAdjacentHTML('beforeend', cardHTML);
-        });
-
-        const initBtn = document.getElementById('init-btn');
         const loader = document.getElementById('loader');
-        const header = document.getElementById('main-header');
-        const cards = document.querySelectorAll('.flip-card');
-        
-        const iframeOverlay = document.getElementById('iframe-overlay');
-        const iframeEl = document.getElementById('target-iframe');
-        const iframeClose = document.getElementById('iframe-close');
-        const iframeTitle = document.getElementById('iframe-title');
-        const iframeExtLink = document.getElementById('iframe-ext-link');
-        let activeCard = null;
+        const appWrapper = document.getElementById('app-wrapper');
+        const contentContainer = document.getElementById('content-container');
+        let appInitialized = false;
 
-        // Init Button Click
-        initBtn.addEventListener('click', () => {
+        function initializeApp() {
+            if (appInitialized) return;
+            appInitialized = true;
             initAudio();
-            playSound('startup');
-            
-            // Fade out loader
+            playSound('confirm');
+
+            // Hide loader
             loader.style.opacity = '0';
-            setTimeout(() => {
-                loader.classList.add('hide');
-                
-                // Show header
-                header.style.opacity = '1';
-                
-                // Trigger staggered card entry
-                cards.forEach(card => {
-                    // Slight timeout to ensure display changes register
-                    setTimeout(() => {
-                        card.classList.add('entered');
-                    }, 50);
-                });
-            }, 1000);
-        });
-
-        // Card Hover & Click Interactions
-        cards.forEach(card => {
-            let glitchTimeout;
-
-            // Hover IN
-            card.addEventListener('mouseenter', () => {
-                const isInactive = projects[card.dataset.index].status === 'inactive';
-                if(!isInactive && !card.classList.contains('zoom-out')) {
-                    card.classList.add('hovered');
-                    playSound('hover');
-                }
-            });
-
-            // Hover OUT (Trigger Glitch)
-            card.addEventListener('mouseleave', () => {
-                if (card.classList.contains('hovered')) {
-                    card.classList.remove('hovered');
-                    card.classList.add('glitch-exit');
-                    
-                    clearTimeout(glitchTimeout);
-                    glitchTimeout = setTimeout(() => {
-                        card.classList.remove('glitch-exit');
-                    }, 400); // match animation duration
-                }
-            });
-
-            // Click -> Zoom Out & Open Iframe
-            card.addEventListener('click', (e) => {
-                const proj = projects[card.dataset.index];
-                if (proj.status === 'inactive') return;
-                
-                playSound('click');
-                activeCard = card;
-                
-                // Apply Zoom Out
-                card.classList.add('zoom-out');
-                
-                // Show Iframe Overlay after short delay
-                setTimeout(() => {
-                    iframeOverlay.classList.remove('invisible');
-                    iframeOverlay.style.opacity = '1';
-                    
-                    iframeTitle.innerText = `LINKING TO: ${proj.name.toUpperCase()}`;
-                    iframeExtLink.href = proj.url;
-                    
-                    // Delay setting src to show loader slightly
-                    setTimeout(() => {
-                        iframeEl.src = proj.url;
-                        // Note: Many sites block iframe embedding via X-Frame-Options.
-                        // The external link is provided as a fallback.
-                    }, 500);
-                    
-                }, 600); // wait for zoom out
-            });
-        });
-
-        // Close Iframe
-        iframeClose.addEventListener('click', () => {
-            playSound('hover'); // Small feedback
-            
-            iframeOverlay.style.opacity = '0';
-            iframeEl.src = ''; // clear iframe
+            loader.style.transition = 'opacity 0.5s ease';
             
             setTimeout(() => {
-                iframeOverlay.classList.add('invisible');
+                loader.style.display = 'none';
+                appWrapper.classList.remove('hidden');
                 
-                // Restore card
-                if (activeCard) {
-                    activeCard.classList.remove('zoom-out');
-                    activeCard.classList.remove('hovered'); // ensure it flips back
-                    activeCard = null;
-                }
+                // Trigger reflow to apply transition
+                void appWrapper.offsetWidth; 
+                appWrapper.classList.remove('opacity-0');
+
+                // Render Content
+                renderEcosystem();
             }, 500);
+        }
+
+        // Loader Timeout (5 seconds) or Click to skip
+        let loaderTimer = setTimeout(initializeApp, 5000);
+        loader.addEventListener('click', () => {
+            clearTimeout(loaderTimer);
+            initializeApp();
+        });
+
+        function renderEcosystem() {
+            let delayCounter = 0;
+
+            ecosystemData.forEach(group => {
+                // Section Wrapper
+                const section = document.createElement('section');
+                
+                // Header
+                const header = document.createElement('h3');
+                header.className = `text-2xl md:text-3xl font-bold mb-8 font-mono border-b border-gray-800 pb-4 ${group.textColor}`;
+                header.innerText = `>> ${group.title}`;
+                section.appendChild(header);
+
+                // Grid Container
+                const grid = document.createElement('div');
+                grid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6';
+
+                group.projects.forEach(proj => {
+                    const cardWrapper = document.createElement('div');
+                    cardWrapper.className = `perspective-container ${group.colorClass} card-enter`;
+                    cardWrapper.style.animationDelay = `${delayCounter * 0.05}s`;
+                    delayCounter++;
+
+                    const innerHTML = `
+                        <div class="flip-card">
+                            <div class="flip-card-front">
+                                <h4 class="text-xl font-bold text-white mb-2">${proj.name}</h4>
+                                <p class="font-mono text-xs text-gray-400 mt-4">[ DECRYPTING NODE ]</p>
+                            </div>
+                            <div class="flip-card-back">
+                                <h4 class="text-lg font-bold text-white mb-2">${proj.name}</h4>
+                                <p class="text-sm text-gray-300 mb-6 px-2">${proj.desc}</p>
+                                <button class="px-6 py-2 rounded border font-mono text-xs uppercase tracking-widest transition-all ${group.btnClass}">
+                                    ${proj.inactive ? 'Offline' : 'Initialize'}
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    cardWrapper.innerHTML = innerHTML;
+                    
+                    const flipCard = cardWrapper.querySelector('.flip-card');
+                    let glitchTimer;
+                    let wasClicked = false;
+
+                    // Interactions
+                    cardWrapper.addEventListener('mouseenter', () => {
+                        if (wasClicked) return;
+                        if (!cardWrapper.classList.contains('glitch-active')) {
+                            flipCard.classList.add('hovered');
+                            playSound(group.groupId);
+                        }
+                    });
+
+                    cardWrapper.addEventListener('mouseleave', () => {
+                        if (wasClicked) return;
+                        if (flipCard.classList.contains('hovered')) {
+                            flipCard.classList.remove('hovered');
+                            
+                            // Trigger Glitch Exit
+                            cardWrapper.classList.add('glitch-active');
+                            playSound('glitch');
+                            
+                            clearTimeout(glitchTimer);
+                            glitchTimer = setTimeout(() => {
+                                cardWrapper.classList.remove('glitch-active');
+                            }, 400); // matches CSS animation duration
+                        }
+                    });
+
+                    cardWrapper.addEventListener('click', () => {
+                        if (proj.inactive) return;
+                        wasClicked = true; // prevent hover effects while zoomed out
+                        playSound('confirm');
+                        openIframe(proj);
+                        
+                        // reset state after returning
+                        setTimeout(() => { wasClicked = false; flipCard.classList.remove('hovered'); }, 1000);
+                    });
+
+                    grid.appendChild(cardWrapper);
+                });
+
+                section.appendChild(grid);
+                contentContainer.appendChild(section);
+            });
+        }
+
+        const iframeOverlay = document.getElementById('iframe-overlay');
+        const targetFrame = document.getElementById('target-frame');
+        const iframeTitle = document.getElementById('iframe-title');
+        const extLink = document.getElementById('ext-link');
+        const closeBtn = document.getElementById('close-btn');
+
+        function openIframe(project) {
+            // Zoom out main app
+            appWrapper.classList.add('app-zoomed-out');
+            
+            // Show Overlay
+            iframeOverlay.classList.add('active');
+            iframeTitle.innerText = `UPLINK: ${project.name.toUpperCase()}`;
+            extLink.href = project.url;
+            
+            // Load URL slightly delayed to allow animations
+            setTimeout(() => {
+                targetFrame.src = project.url;
+            }, 400);
+        }
+
+        closeBtn.addEventListener('click', () => {
+            playSound('glitch');
+            
+            // Hide Overlay
+            iframeOverlay.classList.remove('active');
+            targetFrame.src = ''; // clear iframe
+            
+            // Restore main app
+            appWrapper.classList.remove('app-zoomed-out');
         });
 
     </script>
